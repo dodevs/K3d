@@ -51,13 +51,32 @@ chmod 700 get_helm.sh
 choco install kubernetes-helm
 ```
 ## Instalar traefik
+# Instalar traefik
+referencia:
+ * https://github.com/traefik/traefik-helm-chart
+ * https://medium.com/dev-genius/quickstart-with-traefik-v2-on-kubernetes-e6dff0d65216
 
+1.Adicione o repo do traefik e atualize
 ```bash
-helm repo add traefik https://containous.github.io/traefik-helm-chart
-helm install traefik traefik/traefik
+helm repo add traefik https://helm.traefik.io/traefik
+helm repo update
 ```
 
-Verifiqye se o traefik está funcionando
+2.Edite o arquivo <b>traefik-values.sample.yaml</b> com seu email
+
+3.Acesse o [painel](https://dash.cloudflare.com/profile/api-tokens) de tokens do cloudflare e consiga seu token
+
+4.Gere um secret no kubernetes com seu token
+```bash
+kubectl create secret generic cloudflare --from-literal=dns-token=<my-cloudflare-token-here>
+```
+
+5.Instale o traefik passando as configurações
+```bash
+helm install traefik traefik/traefik -f traefik-values.yaml
+```
+
+Verifique se o traefik está funcionando
 ```bash
 kubectl port-forward $(kubectl get pods --selector "app.kubernetes.io/name=traefik" --output=name) 9000:9000
 ```
@@ -89,9 +108,12 @@ spec:
   - http:
       paths:
       - path: /
+        pathType: Prefix
         backend:
-          serviceName: whoami
-          servicePort: 80
+          service:
+            name: whoami
+            port: 
+              number: 80
 EOF
 ```
 

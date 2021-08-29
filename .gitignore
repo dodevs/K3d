@@ -1,1 +1,3 @@
 kubeconfig
+cloudflare_api_token.txt
+traefik-values.yaml
