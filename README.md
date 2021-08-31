@@ -34,7 +34,7 @@ As portas 80 e 443 vão ser mapeadas para o loadbalancer virtual, permitindo que
 Salvar configurações do cluster em arquivo e exportar para variável:
 ```bash
 k3d kubeconfig get devcluster > kubeconfig
-export KUBECONFIG=kubeconfig
+export KUBECONFIG=$(pwd)/kubeconfig
 ```
 
 ## Instalar Helm
@@ -50,8 +50,8 @@ chmod 700 get_helm.sh
 ```powershell
 choco install kubernetes-helm
 ```
+
 ## Instalar traefik
-# Instalar traefik
 referencia:
  * https://github.com/traefik/traefik-helm-chart
  * https://medium.com/dev-genius/quickstart-with-traefik-v2-on-kubernetes-e6dff0d65216
@@ -101,20 +101,26 @@ kind: Ingress
 metadata:
   name: whoami
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   rules:
   - http:
       paths:
-      - path: /
-        pathType: Prefix
+      - path: /whoami
+        pathType: Exact
         backend:
           service:
             name: whoami
-            port: 
+            port:
               number: 80
 EOF
 ```
 
 Nesse exemplo vamos export o serviço nas duas portas: 80 e 443. E podera ser acessado pelo localhost:80 e pelo localhost:443.
+
+## Dashboard do kubernetes
+
+Recupere o token do usuario criado:
+```bash
+kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
+```
